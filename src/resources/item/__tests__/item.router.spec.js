@@ -2,6 +2,7 @@ import router from '../item.router'
 
 describe('item router', () => {
   test('has crud routes', () => {
+    debugger
     const routes = [
       { path: '/', method: 'get' },
       { path: '/:id', method: 'get' },
