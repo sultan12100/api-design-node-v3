@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "babel src --out-dir dist",
-    "test": "cross-env NODE_ENV=testing jest --forceExit --detectOpenHandles  --silent",
+    "test": "NODE_ENV=testing jest --forceExit --detectOpenHandles --silent",
     "test-routes": "yarn test -t router",
     "test-models": "yarn test -t model",
     "test-controllers": "yarn test -t controllers",
@@ -26,6 +26,7 @@
     "lodash": "^4.17.11",
     "mongoose": "^5.3.13",
     "morgan": "^1.9.1",
+    "util": "^0.12.3",
     "validator": "^10.9.0"
   },
   "devDependencies": {

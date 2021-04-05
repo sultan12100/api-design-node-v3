@@ -1,9 +1,10 @@
 import config from '../config'
 import { User } from '../resources/user/user.model'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
 
 export const newToken = user => {
-  return jwt.sign({ id: user.id }, config.secrets.jwt, {
+  return jwt.sign({ id: user.id, email: user.email }, config.secrets.jwt, {
     expiresIn: config.secrets.jwtExp
   })
 }
@@ -16,10 +17,83 @@ export const verifyToken = token =>
     })
   })
 
-export const signup = async (req, res) => {}
+export const signup = async (req, res) => {
+  try {
+    const email = req.body.email
+    const password = req.body.password
+    const doc = new User({ email: email, password: password })
+    await doc.save()
+    const token = newToken(doc)
+    return res.status(201).send({ token: token })
+  } catch (e) {
+    return res.status(400).send({ message: 'not a valid token' })
+  }
+}
+const hashPlain = password => {
+  return new Promise((resolve, reject) => {
+    bcrypt.hash(password, 8, (err, hash) => {
+      if (err) {
+        return reject('not a real user')
+      }
 
-export const signin = async (req, res) => {}
+      resolve(hash)
+    })
+  })
+}
+export const signin = async (req, res) => {
+  var errCode = 0
+  try {
+    if (!req.body['email'] || !req.body['password']) {
+      errCode = 400
+      throw new Error('email and password are required')
+    }
+    const email = req.body.email
+    errCode = -1
+    const password = req.body.password
+    const testPwd = await hashPlain(password)
+    errCode = 0
+
+    const doc = await User.findOne({ email: email }).exec()
+
+    if (!doc) {
+      const docs = await User.find({}).exec()
+      errCode = 401
+      throw new Error('user not found')
+    }
+    const match = await doc.checkPassword(password)
+    // const isSame = doc.schema.methods.checkPassword(password)
+    if (!match) {
+      errCode = 401
+      throw new Error('password not correct')
+    }
+
+    const token = newToken(doc)
+    return res.status(201).send({ token: token })
+  } catch (e) {
+    console.log(e)
+    if (errCode == -1) {
+      return res.status(401).send({ message: e.message })
+    }
+    return res.status(errCode).send({ message: e.message })
+  }
+}
 
 export const protect = async (req, res, next) => {
-  next()
+  if (!req.headers.authorization) {
+    return res.status(401).end()
+  } else if (req.headers.authorization.split(' ')[0] !== 'Bearer') {
+    return res.status(401).end()
+  } else {
+    var user = await verifyToken(req.headers.authorization.split(' ')[1])
+    user = await User.findById(user.id)
+      .lean()
+      .exec()
+    if (!user) {
+      return res.status(401).end()
+    } else {
+      user = { _id: user._id }
+      req.user = user
+      next()
+    }
+  }
 }

@@ -85,7 +85,7 @@ describe('Authentication:', () => {
     test('user must be real', async () => {
       expect.assertions(2)
 
-      const req = { body: { email: 'hello@hello.com', password: '293jssh' } }
+      const req = { body: { email: 'hell@hello.com', password: '293jssh' } }
       const res = {
         status(status) {
           expect(status).toBe(401)
@@ -122,6 +122,7 @@ describe('Authentication:', () => {
     })
 
     test('creates new token', async () => {
+      debugger
       expect.assertions(2)
       const fields = {
         email: 'hello@me.com',

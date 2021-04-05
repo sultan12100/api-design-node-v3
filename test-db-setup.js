@@ -32,11 +32,11 @@ beforeEach(async done => {
 
   if (mongoose.connection.readyState === 0) {
     try {
+      mongoose.set('useCreateIndex', true)
       await mongoose.connect(
         url + db,
         {
-          useNewUrlParser: true,
-          autoIndex: true
+          useNewUrlParser: true
         }
       )
       await clearDB()
