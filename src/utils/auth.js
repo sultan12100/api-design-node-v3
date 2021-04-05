@@ -29,17 +29,7 @@ export const signup = async (req, res) => {
     return res.status(400).send({ message: 'not a valid token' })
   }
 }
-const hashPlain = password => {
-  return new Promise((resolve, reject) => {
-    bcrypt.hash(password, 8, (err, hash) => {
-      if (err) {
-        return reject('not a real user')
-      }
 
-      resolve(hash)
-    })
-  })
-}
 export const signin = async (req, res) => {
   var errCode = 0
   try {
@@ -50,25 +40,22 @@ export const signin = async (req, res) => {
     const email = req.body.email
     errCode = -1
     const password = req.body.password
-    const testPwd = await hashPlain(password)
     errCode = 0
 
     const doc = await User.findOne({ email: email }).exec()
 
     if (!doc) {
-      const docs = await User.find({}).exec()
       errCode = 401
       throw new Error('user not found')
     }
     const match = await doc.checkPassword(password)
-    // const isSame = doc.schema.methods.checkPassword(password)
     if (!match) {
       errCode = 401
       throw new Error('password not correct')
     }
 
     const token = newToken(doc)
-    return res.status(201).send({ token: token })
+    return res.status(201).send({ token })
   } catch (e) {
     console.log(e)
     if (errCode == -1) {

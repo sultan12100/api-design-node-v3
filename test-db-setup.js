@@ -35,8 +35,10 @@ beforeEach(async done => {
       mongoose.set('useCreateIndex', true)
       await mongoose.connect(
         url + db,
+
         {
-          useNewUrlParser: true
+          useNewUrlParser: true,
+          autoIndex: true
         }
       )
       await clearDB()
